@@ -16,6 +16,9 @@ class Broker:
 
     def get_positions(self):
         return self.positions
+    
+    def execute_trades(self, excecution_positions) -> None:
+        pass
 
 # Positions class definition
 class Positions:
@@ -45,15 +48,16 @@ class RebalancingSystem:
         trades = {}
 
         # Iterate over each asset and target allocation percentage
+        # I have coded it this way so that it can handle situations where there is a stock in current position but not in the target
         for asset, current_unit in current_positions.items():
             # Calculate the current value of the asset
             current_value = current_unit * prices[asset]
             # Calculate the target value of the asset
-            target_value = self.broker.aum * target_allocation.get(asset, 0)/100
+            target_value = self.broker.aum * target_allocation.get(asset, 0)
             # Calculate the value difference to reach the target allocation
             trade_value = target_value - current_value
             # Calculate the number of units needed to be traded to reach the target allocation
-            trade_units = int(trade_value / prices[asset])
+            trade_units = trade_value / prices[asset]
 
             # Store the trade units in the trades dictionary
             trades[asset] = trade_units
@@ -70,14 +74,14 @@ def main():
     rebalancing_system = RebalancingSystem(broker)
 
     # Read the target allocation from the input.json file
-    with open("input.json", "r") as input_file:
+    with open("targetWeights_20230321.json", "r") as input_file:
         target_allocation = json.load(input_file)
 
     # Generate the trades to reach the target allocation
     trades = rebalancing_system.generate_trades(target_allocation)
 
     # Save the generated trades to the output.json file
-    with open("output.json", "w") as output_file:
+    with open("executedTrades_20230321.json", "w") as output_file:
         json.dump(trades, output_file, indent=4)
 
 if __name__ == "__main__":
